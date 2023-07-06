@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+
+  mysql:
+    platform: linux/x86_64 # M1チップ対応のため追記
+    # build: ./mysql/
+    image: mariadb
+    # image: mysql:5.7
+    volumes:
+      - db_data:/var/lib/mysql
+    restart: always
+    # hostname: localhost
+    # command: mysqld --skip-grant-tables --skip-networking
+    environment:
+        - MYSQL_ROOT_PASSWORD=root
+    ports:
+      - "3306:3306"
+
+  redis:
+    image: "redis:latest"
+    ports:
+      - "6379:6379"
+    volumes:
+      - "./redis_data/redis:/data"
+
+volumes:
+    db_data: {}
+    redis_data: {}
