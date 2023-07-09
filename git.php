@@ -2,8 +2,44 @@
 include 'inc.php';
 
 $SQLITE_PATH = "cache/git.sqlite";
-$sqlite = sqliteConnect($SQLITE_PATH);
-$repo_ary = ["api" => "/api","admin" => "/admin" ,"choku" => ""];
+$sqlite = sqliteConnect($SQLITE_PATH); // incで接続したmysqlをsqliteで上書き
+
+/*
+cd devtools/docker/php
+git clone https://github.com/twigphp/Twig.git
+git clone https://github.com/ruby/erb.git
+
+*/
+
+
+
+if (false ){
+    sqlExec('
+    CREATE TABLE "commit_files" (
+        "repo"	TEXT NOT NULL,
+        "hash"	TEXT NOT NULL,
+        "filename"	TEXT NOT NULL,
+        "author"	TEXT,
+        "date"	TEXT,
+        "adds"	INTEGER,
+        "dels"	INTEGER,
+        PRIMARY KEY("repo","hash","filename"))
+    ',$sqlite);
+
+    sqlExec('
+    CREATE TABLE "commits" (
+        "repo"	TEXT NOT NULL,
+        "hash"	TEXT NOT NULL,
+        "author"	TEXT,
+        "message"	TEXT,
+        "date"	TEXT,
+        PRIMARY KEY("repo","hash"))
+    ',$sqlite);
+
+
+}
+
+$repo_ary = ["twig" => "/Twig","erb"=>"erb"];
 
 $view = getRequest('view',false,"commit");
 $upd = getRequest('upd');
@@ -81,7 +117,6 @@ foreach ($view_ary as $viewname) {
 </script>
 
 <?php
-
 // sqlite import
 if ($upd=="sqlite_import"){
 
@@ -227,7 +262,7 @@ if ($view=="commit"){
 
     if ($where) $sql .= " where " . implode(' and ', $where);
     $sql .= " order by date desc";
-    $records = sql2asc($sql , $sqlite);
+    $records = sql2asc($sql ,$sqlite);
     foreach ($records as &$row) {
         $row['author'] = strTrim($row['author'],16);
         $row['message'] = strTrim($row['message'],90,true);

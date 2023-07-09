@@ -1,6 +1,6 @@
 <?php
 // プロジェクトごと設定項目
-$GIT_ROOT = '/Users/masatohori/aaa';
+$GIT_ROOT = '/Users/masatohori/Dropbox/managers/devtools/docker/php/';
 $DOCKER_COMPOSE_ROOT = "/Users/masatohori/Dropbox/managers/devtools/docker";
 $GOOGLE_DRIVE_PATH = "/Users/masatohori/Library/CloudStorage/GoogleDrive-masatohori76@gmail.com";
 
@@ -408,18 +408,18 @@ function sqlExec($sql, $pdo, $flgEcho=true){ //SQL,DB接続,SQL表示フラグ
    		return $statement->rowCount();
 
     }catch(PDOException $e) {
-    	echo "error";
+    	echo "error ";
         echo strGray(jsTrim($sql)) . "<br/>" . strRed($e->getMessage()) . "<br/>";
     }
 }
 
-//SQLから配列:mysql
+//SQL発行して配列で取得。selectのみ
 function sql2asc($sql,$pdo,$flgEcho = true, $limitCount=false){ //SQL,DB接続,SQL表示フラグ
 
 	assertPDO($pdo);
     $GLOBALS['sql_his'][]=$sql;
 
-	$timeStart=microtime(true);
+	$timeStart = microtime(true);
 	//SQL表示
 	if ($flgEcho) echo strSilver(jsTrim($sql));
 
@@ -429,15 +429,8 @@ function sql2asc($sql,$pdo,$flgEcho = true, $limitCount=false){ //SQL,DB接続,S
 	//SQLエラー処理
   	}catch(PDOException $e) {
         echo strRed($e->getMessage())."<br/>";
+		return ;
 	}
-	//insertUpdateDelete 成功
-	if ($result === true) {
-    	if ($flgEcho) echo " &nbsp; <span style='color:Plum;'>" .
-    					   mysql_affected_rows($link) . " &nbsp; " . $timeUsed."&nbsp; </span><br/>";
-		return $result;
- 	}
-
-	//$result insertならtrue/false  select ならオブジェクト返す
 
 	//select結果
     $assoc= [];
