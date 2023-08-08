@@ -325,9 +325,12 @@ function htmlHeader($title){
 			a.cache-link { color:deeppink !important; background:#fee; padding:3px;} /* キャッシュや一時集計ファイルの更新 */
 			a.admin-link { color:green !important; background:#efe; padding:3px;}
 			a.upd-link { color:orange !important; }
+
 			.linename {  background:#f4f4f4; padding:3px;}
 			.tablename { color:blue !important; background:#eef;padding:2px; }
 			.table-def { color:darkslateblue !important; background:#eef;padding:2px; }
+
+			.td1 { white-space:nowrap;}
 
 			.alert { color:red; !important; background:#fee;padding:2px; }
         </style>
@@ -490,7 +493,7 @@ function asc2html($assoc){ //クエリ結果連想配列
 			if ($value === null) { //nullと空白を区別
 				$value = "<span style='color:silver; font-style:italic; '>null</span>";
    			}
-			$return.= '   <td >'.$value."</td>\n";
+			$return.= '   <td class="td1">'.$value."</td>\n";
 		}
 		$return.= "    </tr>\n";
 	}
