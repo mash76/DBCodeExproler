@@ -29,6 +29,9 @@ $filter = getRequest('filter');
 $filename = getRequest('filename');
 $is_show_files = getRequest('is_show_files');
 
+// gitcommand
+$gitcommand = getRequest("gitcommand",false,"ls-files");
+
 $repo_path = $GIT_ROOT . $repo_ary[$repo];
 
 
@@ -44,6 +47,7 @@ echo str150('git ') .strSilver($GIT_ROOT);
 	<input type="hidden" id="repo" name="repo" value="<?=$repo ?>" />
     <input type="hidden" id="view" name="view" value="<?=$view ?>" />
 
+    <input type="hidden" id="gitcommand" name="gitcommand" value="<?=$gitcommand ?>" /><!-- gitcommand -->
     <input type="hidden" id="span" name="span" value="<?=$span ?>" /> <!-- span -->
 	<?php
 	foreach ($repo_ary as $name => $path) {
@@ -82,13 +86,54 @@ echo str150('git ') .strSilver($GIT_ROOT);
 <?php
 
 if ($view=="gitcommands"){
-    $sh1 = 'git -C '.$repo_path . ' ls-files';
+    echo strBG("gitのコマンド実行") . BR;
+
+/*
+git log -p app/view/hoge/show.html.erb  ファイルの履歴
+
+名前とメール設定
+git config --global user.name "My Name"
+git config --global user.email masatohori76@gmail.com
+
+*/
+
+
+    echo "commands  " ;
+    $commands = [
+                "リポジトリ" => "*",
+                "ls-files" => "ls-files",
+                "log" => "log --oneline",
+                "現状" => "*",
+                "status" => " status",
+                "diff-cached" => "diff cached",
+                "branch" => " branch -a",
+                "branch -r" => " branch -r",
+                "ignore" => " status --ignored",
+                "設定" => "*",
+                "config" => " config --list",
+                "config-global" => " config --list --global"];
+
+    foreach ($commands as $key =>$com1) {
+        $disp = $key;
+        if ($com1 == "*"){
+            echo BR . $key . " ";
+            continue;
+        }
+        if ($disp == $gitcommand) $disp = strBold($disp);
+        ?><a href="javascript:setVal('gitcommand','<?=$key ?>')"><?=$disp ?></a> <?php
+    }
+    echo BR;
+
+
+    $sh1 = 'git -C '.$repo_path . ' ' . $commands[$gitcommand];
     $ret =  runShell($sh1) ;
     echo BR .nl2br($ret);
     exit();
 }
 
 if ($view=="sqlite"){
+    echo strBG("SQLiteの格納データ概要") . BR;
+
     $commits = sql2asc('select repo ,count(*) from commits group by repo ',$sqlite);
     echo "commits " . asc2html($commits);
     $commit_files = sql2asc('select repo ,count(*)  from commit_files group by repo ',$sqlite);
@@ -104,6 +149,7 @@ if ($view=="sqlite"){
 
 // mon 月単位分析
 if ($view=="mon"){
+    echo strBG("月単位の統計") . BR;
 
     echo "scale-month  " ;
     $spans = ["1","2","4","12"];

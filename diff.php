@@ -11,7 +11,7 @@ echo str150("Schema Diff ") . BR;
 
 $diff_envs = array_keys($ENVS);
 
-$diffs = [];
+$diffs = []; //
 foreach ($diff_envs as $env_name){
 
     //connection
