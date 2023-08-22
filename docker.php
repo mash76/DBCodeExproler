@@ -9,6 +9,7 @@ $id = getRequest("id");
 
 htmlHeader("docker");
 menu();
+echo str150("Docker ") .strSilver("dockerのコンテナ管理") . BR;
 
 if ($action == "stop"){
     runShell("docker stop " . $id);

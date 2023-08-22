@@ -52,12 +52,19 @@ echo str150('git ') .strSilver($GIT_ROOT);
 	<?php
 	foreach ($repo_ary as $name => $path) {
         $disp = $name;
-        if ($name == $repo) $disp = strRed(strBold($name));
+        if ($name == $repo) $disp = strDarkred(strBold($name));
 		?><a href="javascript:setVal('repo','<?=$name ?>')"><?=str120($disp) ?></a> <?php
 	}
 	?>
     <br/>
     <?php
+$branch = str_replace("*" , "",runShell('git -C '.$repo_path . '  branch | egrep "\*"',false));
+$name = runShell('git -C '.$repo_path . '  config user.name',false);
+$email = runShell('git -C '.$repo_path . '  config user.email',false);
+$origin_url = runShell('git -C '.$repo_path . '  config remote.origin.url',false);
+echo strGreenBG($branch) . SPC . strGrayBG($name) . SPC . strGrayBG($email) . SPC . strGray( $origin_url) . BR;
+
+
     $view_ary = ["commit","author","mon","sqlite","gitcommands"];
     foreach ($view_ary as $viewname) {
         $disp = $viewname;
@@ -85,6 +92,8 @@ echo str150('git ') .strSilver($GIT_ROOT);
 
 <?php
 
+
+
 if ($view=="gitcommands"){
     echo strBG("gitのコマンド実行") . BR;
 
@@ -95,6 +104,9 @@ git log -p app/view/hoge/show.html.erb  ファイルの履歴
 git config --global user.name "My Name"
 git config --global user.email masatohori76@gmail.com
 
+remote.origin.url
+user.name
+user.email
 */
 
 
@@ -106,6 +118,7 @@ git config --global user.email masatohori76@gmail.com
                 "現状" => "*",
                 "status" => " status",
                 "diff-cached" => "diff cached",
+                "Branch" => "*",
                 "branch" => " branch -a",
                 "branch -r" => " branch -r",
                 "ignore" => " status --ignored",
@@ -116,13 +129,13 @@ git config --global user.email masatohori76@gmail.com
     foreach ($commands as $key =>$com1) {
         $disp = $key;
         if ($com1 == "*"){
-            echo BR . $key . " ";
+            echo BR . strGrayBG($key) . " ";
             continue;
         }
         if ($disp == $gitcommand) $disp = strBold($disp);
         ?><a href="javascript:setVal('gitcommand','<?=$key ?>')"><?=$disp ?></a> <?php
     }
-    echo BR;
+    echo "<hr/>";
 
 
     $sh1 = 'git -C '.$repo_path . ' ' . $commands[$gitcommand];

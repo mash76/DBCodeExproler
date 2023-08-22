@@ -1,13 +1,9 @@
 <?php
 include 'inc.php';
-$pdo = new PDO($datasource,$current_env['user'],$current_env['pass']);
 
 htmlHeader("schema diff");
-?>
-<?=menu(); ?>
-<?php
-
-echo str150("Schema Diff ") . BR;
+echo menu();
+echo str150("Schema Diff ") .strSilver("MySQLスキーマの比較") . BR;
 
 $diff_envs = array_keys($ENVS);
 

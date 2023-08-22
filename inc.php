@@ -1,6 +1,8 @@
 <?php
 include "_env.php";
 
+$MENUS = ["links","tables","diff","sql","users","cards","grep","git","gdrive","docker","k8s","cache","shell","aws","aws2"];
+
 $SHELL_HISTORY =[];
 $SQL_HISTORY =[];
 
@@ -12,6 +14,14 @@ define('SPC','&nbsp;');
 define('BR','<br/>');
 define('BRBR','<br/><br/>');
 define('LF',"\n");
+
+// docker関連
+if ($USE_DOCKER){
+	$docker_shell = "ps aux | grep -i docker | grep -i serve | grep -v ps";
+	$ret = trim(runShell($docker_shell,false) . "");
+	if (!$ret ) exit( strBG($docker_shell) . BR . strRed("docker daemon not running"));
+}
+
 
 // env関連
 if (! isset($_SESSION['current_env_name'])) $_SESSION['current_env_name'] = $ENV_DEFAULT;
@@ -93,7 +103,7 @@ function setNames2Rec($recs, $table_name = "" ){
 }
 
 function menu(){
-	global $DATA,$pdo,$ENVS,$current_env,$MENUS;
+	global $DATA,$ENVS,$current_env,$MENUS;
 
 	foreach ($ENVS as $envname => $row){
 		$disp = $envname;
@@ -264,15 +274,19 @@ function assocDumpNoKey($assoc){  //連想配列をHTMLテーブルでダンプ1
 	return $ret;
 }
 
-
-
-
 function runShell($shell,$showDump=true){ //shell実行、コマンド出力
-	global $SHELL_HISTORY;
+	global $SHELL_HISTORY,$STDERR_PATH ;
 	$SHELL_HISTORY[] = $shell;
 
 	if ($showDump) echo strGrayBG(nl2br($shell));
-	return `$shell`;
+	$shell = $shell . " 2>" . $STDERR_PATH;
+	$ret = [];
+	$result_code = exec($shell,$ret). "";
+	//$ret = `$shell` . "";
+	$return = trim(implode("\n",$ret)) ;
+	$err = file_get_contents($STDERR_PATH);
+	if ($err) $return = strRed(nl2br(file_get_contents($STDERR_PATH)). "") . $return;
+	return $return;
 }
 function runShellAry($shell,$showDump=true){ //shell実行、コマンド出力
 	global $SHELL_HISTORY;
@@ -294,21 +308,17 @@ function htmlHeader($title){
 		<link rel="icon" href="favicon.ico">
         <style>
             body{color:#666; font-family:sans-serif,helvetica; }
-            a:link{color:#1e90ff; text-decoration:none; padding:2px;}
-            a:visited{color:#1e90ff; text-decoration:none; }
-            a:hover{color:#1e90ff; text-decoration:underline; opacity:0.6;}
+            a:link{color:dodgerblue; text-decoration:none; padding:2px; }
+            a:visited{color:dodgerblue; text-decoration:none; }
+            a:hover{color:dodgerblue; text-decoration:underline; opacity:0.6; }
 
-            .top_nowrap {vertical-align:top; white-space:nowrap;}
-            silver {color:silver; }
-
-			th {font-weight:normal; color:#bbb; border-bottom: 1px solid gray; color:gray; padding-right:10px;}
-			td {border-bottom: 1px solid silver ; padding-right:5px; text-align:left; vertical-align:top; whitespace:nowrap;}
-
-            .flex-item {margin-left:15px; margin-bottom:20px;  }
+			th {font-weight:normal; color:#bbb; border-bottom: 1px solid gray; color:gray; padding-right:10px; }
+			td {border-bottom: 1px solid silver ; padding-right:5px; text-align:left; vertical-align:top; white-space:nowrap; }
+            .flex-item {margin-left:15px; margin-bottom:20px; }
             .flex-container {display: flex; flex-wrap:wrap; }
-			a.history-link { color:orange !important; background:#fee; padding:3px;}
-			a.cache-link { color:deeppink !important; background:#fee; padding:3px;} /* キャッシュや一時集計ファイルの更新 */
-			a.admin-link { color:green !important; background:#efe; padding:3px;}
+			a.history-link { color:orange !important; background:#fee; padding:3px; }
+			a.cache-link { color:deeppink !important; background:#fee; padding:3px; } /* キャッシュや一時集計ファイルの更新 */
+			a.admin-link { color:green !important; background:#efe; padding:3px; }
 			a.upd-link { color:orange !important; }
 
 			.linename {  background:#f4f4f4; padding:3px;}
@@ -531,9 +541,28 @@ function link2detail($name,$html){
 
     $id = rand(10000,50000);
     $ret = '<a href="javascript:$(\'#' . $id . '\').slideToggle(60)" >' . strOrangeBG($name) . '</a>';
-    $ret .= '<div id="' . $id . '" style="background:#f8f8f8; padding:3px; border-radius:5px; display:none; ">' . $html . '</div>';
+    $ret .= '<pre id="' . $id . '" style="background:#f8f8f8; padding:3px; border-radius:5px; display:none; ">' . $html . '</pre>';
     return $ret;
 }
+
+?>
+function
+
+<?php
+
+// ペアで使う
+function l2dLink($name){
+	// 開いてるdetailで自分以外全部閉じ、自分をtoggle
+    $ret = '<a href="javascript:$(\'pre[id!=' .$name. ']\').hide(0);
+				$(\'#' . $name . '\').slideToggle(50);" >' . strOrangeBG($name) . '</a>';
+    return $ret;
+}
+function l2dDetail($name,$html){
+    $ret = '<pre id="' . $name . '" group="details" style="background:#f8f8f8; padding:3px; border-radius:5px; display:none; ">' . $html . '</pre>';
+    return $ret;
+}
+
+
 
 function debugFooter(){
 	echo '<hr/>';
@@ -562,14 +591,19 @@ function commonJS(){
 //色 /背景
 function strBG($str) { return "<span style='color:#444444; background:#eee; padding:1px;'>".$str."</span>";}
 function strWhite($str) { return "<span style='color:#FFFFFF;'>".$str."</span>";}
-function strPink($str) { return "<span style='color:pink;'>".$str."</span>";}
+function strPink($str) { return "<span style='color:deeppink;'>".$str."</span>";}
+function strPinkBG($str) { return "<span style='color:deeppink; background:#fee;'>".$str."</span>";}
 function strBlack($str) { return "<span style='color:#444444;'>".$str."</span>";}
 function strBlackBG($str) { return "<span style='color:#444444; background:#eee; padding:1px;'>".$str."</span>";}
 function strBlue($str) { return "<span style='color:#4444DD;'>".$str."</span>";}
 function strBlueBG($str) { return "<span style='color:#4444DD; background:#eef; padding:1px;'>".$str."</span>";}
+function strDodger($str) { return "<span style='color:dodgerblue;'>".$str."</span>";}
+function strDodgerBG($str) { return "<span style='color:dodgerblue; background:#eef; padding:1px;'>".$str."</span>";}
+
 function strYellow($str) { return "<span style='color:yellow;'>".$str."</span>";}
 function strRed($str)  { return "<span style='color:red;'>".$str."</span>";}
 function strGreen($str) { return "<span style='color:DarkGreen;'>".$str."</span>";}
+function strGreenBG($str) { return "<span style='color:DarkGreen; background:#efe;'>".$str."</span>";}
 function strDarkred($str) { return "<span style='color:crimson;'>".$str."</span>";}
 function strGray($str) { return "<span style='color:gray;'>".$str."</span>";}
 function strGrayBG($str) { return "<span style='color:gray; background:#eee; padding:1px;'>".$str."</span>";}
@@ -595,12 +629,23 @@ function str150($str) { return "<span style='font-size:150%;'>".$str."</span>";}
 function strBold($str) { return "<span style='font-weight:bold;'>".$str."</span>";}
 function strCenter($str){ return "<div style='text-align:center;'>".$str."</div>";}
 
+function strCode($str){ return "<div style='font-family:Courier New; background:#f8f8f8;'>". $str."</div>"; }
+
 // 目的別
 function strZeroSilver($val){
     if ($val ==0) return strSilver($val);
     return $val;
 }
+function assocZeroSilver($records){
+	foreach ($records as &$row){
+		foreach ($row as $key => &$val){
+			$val = strZeroSilver($val);
+		}
+	}
+	return $records;
+}
 
+// このプログラムでの設定
 function strCache($str){ return strOrangeBG($str); }
 function strTableName($str){ return "<span class='tablename'>".$str."</span>";}
 function strTitle($str) { return "<span style='font-family:arial,helvetica,sans-serif;'>".$str."</span>";}
