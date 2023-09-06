@@ -3,9 +3,8 @@ include 'inc.php';
 
 $sql = getRequest("sql");
 
-htmlHeader($_SESSION['current_env_name'] . " TABLES");
+htmlHeader($_SESSION['current_env_name'] . " sql");
 menu();
-
 
 ?>
 

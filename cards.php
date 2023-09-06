@@ -1,15 +1,15 @@
 <?php
-
 include 'inc.php';
 
 $filter = getRequest('filter');
 $card_id = getRequest('card_id');
 $view = getRequest('view' ,false ,'tables' );
 
+
 htmlHeader($_SESSION['current_env_name']  . ' card ' . $card_id);
 menu();
-
 echo str150('<a href="?">Cards</a> カード ');
+
 echo str150(RDBtableRowCt('cards',$pdo)) ;
 
 echo ' <a class="admin-link" href="' . $ADMIN_URL_BASE . 'customer-list">一覧</a>' ;

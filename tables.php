@@ -1,6 +1,6 @@
 <?php
 include 'inc.php';
-$pdo = new PDO($datasource,$current_env['user'],$current_env['pass']);
+
 
 $filter_tables =[
 	'TABLE' => ["card","log","user"],
@@ -19,7 +19,10 @@ $days = getRequest("days",false,5);
 htmlHeader($_SESSION['current_env_name'] . " TABLES");
 menu();
 
+
+
 $CACHE_FILE_NAME = 'cache/table_CACHE_ARY-' . $_SESSION['current_env_name'] . '.txt';
+
 if (!file_exists($CACHE_FILE_NAME)){
 	createMySQLSchemaStatCache($filter_tables,$filter_cols,$CACHE_FILE_NAME,$pdo);
 }
